@@ -1,0 +1,464 @@
+<!-- 🔁 Router (FINAL page): if the combo is one of the 8 PQ combos, send them back to pq-tbc-english -->
+<script>
+(function routeFromFINAL(){
+  const PQ_SET = new Set([
+    "rhino+love_bird","rhino+owl","rhino+sheep",
+    "owl+love_bird","owl+sheep",
+    "love_bird+rhino","love_bird+owl","love_bird+sheep"
+  ]);
+  const p = new URLSearchParams(location.search);
+  const scores = {
+    sheep:     parseInt(p.get("sheep"))     || 0,
+    love_bird: parseInt(p.get("love_bird")) || 0,
+    owl:       parseInt(p.get("owl"))       || 0,
+    rhino:     parseInt(p.get("rhino"))     || 0,
+  };
+  if (!(scores.sheep || scores.love_bird || scores.owl || scores.rhino)) return;
+  const order = ["rhino","owl","love_bird","sheep"];
+  const ranked = Object.keys(scores).sort((a,b)=>{
+    if (scores[b] === scores[a]) return order.indexOf(a) - order.indexOf(b);
+    return scores[b] - scores[a];
+  });
+  const key = `${ranked[0]}+${ranked[1]}`;
+  const PQ_PATH = "/pages/pq-tbc-english";
+  if (PQ_SET.has(key)) location.replace(`${PQ_PATH}${location.search}`);
+})();
+</script>
+
+<!-- ✅ Styles -->
+<style>
+  .quiz-results{max-width:600px;margin:50px auto 0;padding:30px;font-family:'Helvetica Neue',sans-serif;text-align:center}
+  h1{font-size:28px;font-weight:700;margin-bottom:20px}
+  h2{font-size:24px;margin-bottom:20px;color:#111}
+  h3#greeting{font-size:20px;margin-bottom:30px;color:#555}
+  .bar-bg{background:#eee;border-radius:20px;height:16px;margin:10px auto;overflow:hidden;width:100%}
+  .bar{height:100%;transition:width 1s ease-in-out}
+  #bar-sheep{background:#0169a7} #bar-love_bird{background:#dfeb05}
+  #bar-owl{background:#049109}   #bar-rhino{background:#db1304}
+  .summary-text{margin-top:10px;font-size:16px;line-height:1.5;color:#444}
+  .cta-wrapper{margin-top:10px;display:flex;justify-content:center;gap:20px;flex-wrap:wrap}
+  .alt-btn{background:#3c82f6;color:#fff;font-weight:600;text-transform:uppercase;letter-spacing:2px;padding:14px 28px;border-radius:12px;text-decoration:none;transition:.3s;box-shadow:0 4px 10px rgba(0,0,0,.1)}
+  .alt-btn:hover{background:#d43b68;transform:translateY(-2px)}
+  @media (max-width:640px){.cta-wrapper{flex-direction:column;align-items:center}.alt-btn{width:100%;max-width:280px;margin-bottom:12px}}
+  .highlight-name{font-weight:800;background:linear-gradient(to right,#1b5fa8,#a0bede);padding:2px 6px;border-radius:6px;color:#fff}
+  /* CTA button style used in the section below */
+  .bounce-button-xl{display:inline-block;padding:24px 64px;margin:1rem;font-size:1.4rem;font-weight:800;text-decoration:none;border-radius:999px;box-shadow:0 10px 35px rgba(0,0,0,.15);transition:.3s;animation:pulseGradient 5s linear infinite;background-size:200% 200%;color:#fff;background-image:linear-gradient(270deg,#1a325d,#1a325d,#1a325d)}
+  .bounce-button-xl:hover{transform:scale(1.07) translateY(-6px);box-shadow:0 16px 50px rgba(0,0,0,.2)}
+  .bounce-button-xl.gray{background-image:linear-gradient(270deg,#bbb,#ddd,#bbb);color:#333}
+  @keyframes pulseGradient{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  /* Plan typography */
+  .plan{max-width:900px;margin:2rem auto;padding:2rem 1rem;font-family:'Helvetica Neue',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(to bottom,#f7f7f7,#fff)}
+  .plan h2{font-size:2rem;color:#005181;margin:0 0 1rem}
+  .plan h3{font-size:1.35rem;color:#1a325d;margin:1.4rem 0 .4rem}
+  .plan h4{font-size:1.1rem;color:#1a325d;margin:1rem 0 .2rem;text-transform:uppercase;letter-spacing:.02em}
+  .plan p,.plan li{color:#333;line-height:1.6}
+  .plan ul{margin:.4rem 0 .9rem 1.2rem}
+  .pill{display:inline-block;background:#D6ECFA;color:#1a325d;padding:.3rem .6rem;border-radius:.6rem;font-weight:700;margin-right:.4rem}
+
+  /* 🔥 Enlarge the Personality Combination line */
+  #result-title{
+    font-size:2.0rem; 
+    font-weight:800; 
+    line-height:1.2 !important;
+    margin-bottom:20px;
+  }
+  @media (max-width:640px){
+    #result-title{ font-size:2.4rem !important; }
+  }
+</style>
+
+<!-- ✅ Results header + bars -->
+<div class="quiz-results">
+  <h1 style="font-size:2.8rem; color:#1a325d;">Your Animal Personality Breakdown!</h1>
+  <h3 id="greeting" class="greeting-text"></h3>
+  <h2 id="result-title"></h2>
+  <p id="result-description" class="summary-text"></p>
+
+  <p>🐑 Sheep Personality: <span id="score-sheep">0%</span></p>
+  <div class="bar-bg"><div class="bar" id="bar-sheep"></div></div>
+
+  <p>🦜 Love Bird Personality: <span id="score-love_bird">0%</span></p>
+  <div class="bar-bg"><div class="bar" id="bar-love_bird"></div></div>
+
+  <p>🦉 Owl Personality: <span id="score-owl">0%</span></p>
+  <div class="bar-bg"><div class="bar" id="bar-owl"></div></div>
+
+  <p>🦏 Rhino Personality: <span id="score-rhino">0%</span></p>
+  <div class="bar-bg"><div class="bar" id="bar-rhino"></div></div>
+</div>
+
+<!-- Where the TWO-ANIMAL plan renders -->
+<div id="combo-plan"></div>
+
+<!-- CTA blurb + buttons -->
+<div style="text-align:center; padding:3rem 1rem;">
+  <h3 style="color:#1a325d; font-size:1.5rem; font-weight:700;">Lead from abundance, not exhaustion</h3>
+  <p style="font-size:1.2rem; color:#444; max-width:700px; margin:0 auto 2rem; line-height:1.6;">
+    In The Business Circle, great leaders become even greater. This is your space and community to keep growing without having to lead alone.
+  </p>
+  <a href="https://coaching.itsrichardmartinez.com/calendar-page" class="bounce-button-xl">BOOK YOUR FREE CONSULTATION</a>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  // Read URL params
+  const params = new URLSearchParams(window.location.search);
+  const scores = {
+    sheep:     parseInt(params.get("sheep"))     || 0,
+    love_bird: parseInt(params.get("love_bird")) || 0,
+    owl:       parseInt(params.get("owl"))       || 0,
+    rhino:     parseInt(params.get("rhino"))     || 0,
+  };
+  const firstName = params.get("first_name");
+
+  // Bars + percents
+  const total = scores.sheep + scores.love_bird + scores.owl + scores.rhino || 0;
+  const pct = k => total ? Math.round((scores[k] / total) * 100) : 0;
+  document.getElementById("score-sheep").textContent = pct("sheep") + "%";
+  document.getElementById("bar-sheep").style.width = pct("sheep") + "%";
+  document.getElementById("score-love_bird").textContent = pct("love_bird") + "%";
+  document.getElementById("bar-love_bird").style.width = pct("love_bird") + "%";
+  document.getElementById("score-owl").textContent = pct("owl") + "%";
+  document.getElementById("bar-owl").style.width = pct("owl") + "%";
+  document.getElementById("score-rhino").textContent = pct("rhino") + "%";
+  document.getElementById("bar-rhino").style.width = pct("rhino") + "%";
+
+  if (firstName) {
+    document.getElementById("greeting").innerHTML =
+      `Hey <span class="highlight-name">${firstName}</span>, here’s your Final 30-Day Plan 👇`;
+  }
+
+  // 🔀 Top-two ranking (stable tie-breaker)
+  const order = ["rhino","owl","love_bird","sheep"]; // tie-break priority
+  const ranked = Object.keys(scores).sort((a,b)=>{
+    if (scores[b] === scores[a]) return order.indexOf(a) - order.indexOf(b);
+    return scores[b] - scores[a];
+  });
+  const primary = ranked[0];
+  const secondary = ranked[1];
+  const key = `${primary}+${secondary}`;
+
+  const names = { sheep:"Sheep", love_bird:"Lovebird", owl:"Owl", rhino:"Rhino" };
+  document.getElementById("result-title").innerHTML =
+  `Your Personality Combination: <span class="highlight-name">${names[primary].toUpperCase()}</span> + <span class="highlight-name">${names[secondary].toUpperCase()}</span>`;
+
+  document.getElementById("result-description").textContent =
+    "Strong match found. Your plan blends your first move with your correction move for consistent results.";
+
+  // 🔻 FINAL PAGE: only these FOUR combos live here
+  const pairPlans = {
+"owl+rhino": `
+<div class="plan">
+  <h2><span class="pill">OWL</span> + <span class="pill">RHINO</span> — 30-Day Comprehensive Growth Blueprint</h2>
+  <h3>Calculated Precision. Bold Backbone. Consistent Results.</h3>
+  <h3>Who You Are</h3>
+  <p><b>Primary Owl:</b> You lead with analysis and precision. You check details, gather data, and prefer accuracy before action.</p>
+  <p><b>Secondary Rhino:</b> When delays frustrate you—or when others don’t respect your thoroughness—your Rhino comes out, snapping bluntly and demanding results.</p>
+  <p><b>Your Loop:</b> Analyze → Delay → Frustrate → Snap → Regret → Repeat</p>
+  <p><b>Your Growth Path:</b> Keep your Owl precision and Rhino boldness—but move sooner, and use firmness calmly instead of late explosions. Combine accuracy with timely, decisive leadership.</p>
+
+  <h3>Where You Shine / Where You Sabotage</h3>
+  <h4>Strengths</h4>
+  <ul><li>Thorough, detail-oriented, fact-driven.</li><li>Can switch into bold action when pushed.</li><li>Sees both accuracy and urgency.</li></ul>
+  <h4>Weak Spots</h4>
+  <ul><li>Overanalyzing until action stalls.</li><li>Snapping when things pile up.</li><li>Confusing perfection with leadership.</li></ul>
+  <p><b>Growth Edge:</b> Decide earlier, act steadier, and deliver Rhino firmness before frustration builds.</p>
+
+  <h3>How You Impact the Big 4 Areas</h3>
+  <h4>Relationships</h4>
+  <ul>
+    <li><b>Facts Before Feelings:</b> “Here are the facts—this needs to change by Friday.”</li>
+    <li><b>Share Concerns Early:</b> “I noticed this slipping—let’s fix it now.”</li>
+    <li><b>Firm Calm, Not Harsh Snaps:</b> “This isn’t optional—it needs to be complete by tomorrow.”</li>
+    <li><b>Balance Critique With Belief:</b> “This missed the mark, but I know you can tighten it.”</li>
+  </ul>
+  <h4>Career / Business</h4>
+  <ul>
+    <li><b>Decide at 80% Data:</b> “We’ll finalize by 3 PM tomorrow with the best info we have.”</li>
+    <li><b>Consistent Check-Ins:</b> “Quick update: here’s where we are and the next step.”</li>
+    <li><b>Numbers → Action:</b> “We’re 12% behind—here are the 2 steps for this week.”</li>
+    <li><b>Systemize Instead of Snapping:</b> “Here’s the 5-step checklist—follow it every time.”</li>
+  </ul>
+  <h4>Finances</h4>
+  <ul>
+    <li><b>Plan, Then Push:</b> Budget precisely, then set bold income actions.</li>
+    <li><b>24-Hour Spending Rule.</b></li>
+    <li><b>Weekly Review, Monthly Adjust.</b></li>
+    <li><b>Firm Payment Standards:</b> “Payment was due Friday—has it been sent?”</li>
+  </ul>
+  <h4>Health</h4>
+  <ul>
+    <li><b>Track One Metric.</b></li>
+    <li><b>Mix Push With Boundaries:</b> 45 minutes hard, then stop.</li>
+    <li><b>Simple Nutrition Rule:</b> Protein every meal this week.</li>
+    <li><b>Schedule Recovery:</b> Thu 9 PM—stretch + journal, no screens.</li>
+  </ul>
+
+  <h3>Red Flags & Correction Protocol</h3>
+  <ul>
+    <li>Overanalyzing → stalls; snapping after delays; frozen by perfection.</li>
+  </ul>
+  <ul>
+    <li>Ask “Do I have 80% of facts?” → decide; set a 24h deadline; deliver expectation calmly; review after.</li>
+  </ul>
+
+  <h3>Your 30-Day Plan</h3>
+  <h4>Week 1 — Decide Earlier</h4>
+  <ul><li>Use 24h decision gate once.</li><li>Launch one project at 80% info.</li><li>Deliver one fact-based correction calmly.</li></ul>
+  <h4>Week 2 — Speak Before You Snap</h4>
+  <ul><li>Raise one issue within 24h of noticing.</li><li>Use “gentle but firm” script once.</li><li>Encourage once before correcting.</li></ul>
+  <h4>Week 3 — Lead With Data, Close With Action</h4>
+  <ul><li>Run one meeting: data first → decisions.</li><li>Give one midweek status update.</li><li>Create one recurring checklist.</li></ul>
+  <h4>Week 4 — Balance Push & Recovery</h4>
+  <ul><li>Track one health metric.</li><li>3 workouts + 2 recovery sessions.</li><li>24h spend rule once.</li><li>Weekly finances review; adjust monthly.</li></ul>
+
+  <h3>Tools</h3>
+  <ul>
+    <li>Scripts: “Here are the facts…”, “This isn’t optional…”, “Payment was due Friday…”.</li>
+    <li>Decision Gate (80% info, ≤24h).</li>
+    <li>Finance Guardrails (weekly review, 24h delay, firm follow-ups).</li>
+    <li>Reset Menu (walk, stretch, journal, prayer, breathwork).</li>
+  </ul>
+
+  <h3>By Day 30</h3>
+  <ul>
+    <li>You decide earlier without losing accuracy.</li>
+    <li>You correct calmly, not explosively.</li>
+    <li>You lead meetings with clarity and action.</li>
+    <li>Finances grow with discipline + bold pushes.</li>
+    <li>Health habits stick with balance and focus.</li>
+    <li>You show up precise, firm, respected, steady.</li>
+  </ul>
+</div>`,
+
+"sheep+love_bird": `
+<div class="plan">
+  <h2><span class="pill">SHEEP</span> + <span class="pill">LOVEBIRD</span> — 30-Day Comprehensive Growth Blueprint</h2>
+  <h3>Steady Loyalty. Social Warmth. Lasting Connection.</h3>
+  <h3>Who You Are</h3>
+  <p><b>Primary Sheep:</b> Steady, loyal, harmony-first.</p>
+  <p><b>Secondary Lovebird:</b> When worried about disappointing people, you charm/please to keep peace.</p>
+  <p><b>Your Loop:</b> Support → Over-accommodate → Avoid Conflict → Overloaded → Repeat</p>
+  <p><b>Your Growth Path:</b> Keep calm loyalty + charm, add stronger boundaries. Lead with encouragement and warmth while holding steady standards.</p>
+
+  <h3>Where You Shine / Where You Sabotage</h3>
+  <h4>Strengths</h4>
+  <ul><li>Loyal, supportive, trustworthy.</li><li>Warm, social, easy to like.</li><li>Creates safety and positivity.</li></ul>
+  <h4>Weak Spots</h4>
+  <ul><li>Saying yes to avoid letting people down.</li><li>Avoiding hard truths.</li><li>Getting stretched thin, then resentful.</li></ul>
+  <p><b>Growth Edge:</b> Say yes when you mean yes, no when you mean no—respect rises.</p>
+
+  <h3>Big 4 Areas</h3>
+  <h4>Relationships</h4>
+  <ul>
+    <li><b>Kind but Firm Boundaries:</b> “I care about you, but I can’t commit to this right now.”</li>
+    <li><b>Encourage Without Enabling:</b> “It’s hard, and I believe you can finish this.”</li>
+    <li><b>Speak Up Early:</b> “I need to talk about this now so we don’t repeat it.”</li>
+    <li><b>Celebrate Without Over-Pleasing:</b> “I appreciate you—that meant a lot.”</li>
+  </ul>
+  <h4>Career / Business</h4>
+  <ul>
+    <li><b>Encouragement + Standards:</b> “I value your work, and that’s why I expect this by Friday.”</li>
+    <li><b>Say No to Overcommitment:</b> “I can commit to X only.”</li>
+    <li><b>Warm Influence:</b> “Here’s how this helps us all win.”</li>
+    <li><b>Consistency Over People-Pleasing:</b> “I expect the same standard for everyone.”</li>
+  </ul>
+  <h4>Finances</h4>
+  <ul>
+    <li><b>Steady Budget + Fun Rewards.</b></li>
+    <li><b>Guard Against Guilt Spending.</b></li>
+    <li><b>Weekly Money Check-In.</b></li>
+    <li><b>Say No to Pressure Buys.</b></li>
+  </ul>
+  <h4>Health</h4>
+  <ul>
+    <li><b>Fun, Social Fitness.</b></li>
+    <li><b>Gentle Consistency:</b> Daily 20-min walk.</li>
+    <li><b>Accountability Partner.</b></li>
+    <li><b>Protect Rest Time.</b></li>
+  </ul>
+
+  <h3>Red Flags & Protocol</h3>
+  <ul><li>Saying yes too often; avoiding conflict; spending to please.</li></ul>
+  <ul><li>Ask “Am I helping or avoiding?” → restate boundary kindly → say no if needed → follow through calmly.</li></ul>
+
+  <h3>Your 30-Day Plan</h3>
+  <h4>Week 1 — Say Yes With Boundaries</h4>
+  <ul><li>Say no kindly once.</li><li>Deliver one expectation with care + clarity.</li><li>Celebrate 2 wins without over-promising.</li></ul>
+  <h4>Week 2 — Speak Up Early</h4>
+  <ul><li>Raise one issue within 24h.</li><li>Use “encourage without excusing” twice.</li><li>Protect one boundary.</li></ul>
+  <h4>Week 3 — Money With Discipline</h4>
+  <ul><li>Apply giving cap once.</li><li>Sunday night review.</li><li>24-hour rule on one purchase.</li></ul>
+  <h4>Week 4 — Health With Fun & Rhythm</h4>
+  <ul><li>Two social workouts.</li><li>Walk 20 minutes nightly.</li><li>Share one win with a partner.</li><li>One rest evening.</li></ul>
+
+  <h3>Tools</h3>
+  <ul>
+    <li>Boundary Scripts; Finance Guardrails; Reset Menu (group workout, journaling, tea, quiet walk, music).</li>
+  </ul>
+
+  <h3>By Day 30</h3>
+  <ul>
+    <li>You protect boundaries and still inspire.</li>
+    <li>You address issues calmly and early.</li>
+    <li>Finances stabilize with discipline + joy.</li>
+    <li>Health routines stick through fun + steadiness.</li>
+  </ul>
+</div>`,
+
+"sheep+owl": `
+<div class="plan">
+  <h2><span class="pill">SHEEP</span> + <span class="pill">OWL</span> — 30-Day Comprehensive Growth Blueprint</h2>
+  <h3>Steady Loyalty. Careful Precision. Trusted Results.</h3>
+  <h3>Who You Are</h3>
+  <p><b>Primary Sheep:</b> Calm, steady support; harmony and stability.</p>
+  <p><b>Secondary Owl:</b> When peace feels shaky, you double-check details or slow things to avoid mistakes.</p>
+  <p><b>Your Loop:</b> Support → Avoid Conflict → Overanalyze → Stall → Repeat</p>
+  <p><b>Your Growth Path:</b> Keep loyalty + accuracy, act sooner with calm confidence.</p>
+
+  <h3>Shine / Sabotage</h3>
+  <h4>Strengths</h4>
+  <ul><li>Loyal, dependable, safe to trust.</li><li>Detail-aware and consistent.</li><li>Builds harmony while protecting quality.</li></ul>
+  <h4>Weak Spots</h4>
+  <ul><li>Avoiding conflict until standards slip.</li><li>Overthinking slows decisions.</li><li>Confusing patience with passivity.</li></ul>
+  <p><b>Growth Edge:</b> Speak early, keep it simple, decide faster.</p>
+
+  <h3>Big 4 Areas</h3>
+  <h4>Relationships</h4>
+  <ul>
+    <li><b>Gentle Clarity:</b> “I value us, which is why I need this by Friday.”</li>
+    <li><b>Speak Before Resentment:</b> “This hasn’t been consistent—can we adjust now?”</li>
+    <li><b>Keep It Simple:</b> “All I need is X by Y.”</li>
+    <li><b>Encourage Without Enabling.</b></li>
+  </ul>
+  <h4>Career / Business</h4>
+  <ul>
+    <li><b>Consistent Standards + Checklists.</b></li>
+    <li><b>Decide Within 48 Hours.</b></li>
+    <li><b>Balance Truth + Care.</b></li>
+    <li><b>Safe + Accountable Culture.</b></li>
+  </ul>
+  <h4>Finances</h4>
+  <ul>
+    <li><b>Detailed Budget, Steady Habits.</b></li>
+    <li><b>Don’t Over-Give From Guilt.</b></li>
+    <li><b>Weekly Review Only.</b></li>
+    <li><b>Clear Payment Requests.</b></li>
+  </ul>
+  <h4>Health</h4>
+  <ul>
+    <li><b>Steady, Repeatable Routines.</b></li>
+    <li><b>Track One Metric.</b></li>
+    <li><b>Calming Resets (9 PM stretch + journal).</b></li>
+    <li><b>Gentle Accountability Partner.</b></li>
+  </ul>
+
+  <h3>Red Flags & Protocol</h3>
+  <ul><li>Delaying to avoid mistakes; avoiding conflict; over-giving.</li></ul>
+  <ul><li>Ask “Am I delaying to avoid discomfort?” → decide ≤48h → speak calmly → follow up steadily.</li></ul>
+
+  <h3>Your 30-Day Plan</h3>
+  <h4>Week 1 — Speak Calmly, Speak Early</h4>
+  <ul><li>“Gentle but firm” script twice.</li><li>Raise one issue within 24h.</li><li>Use keep-it-simple script once.</li></ul>
+  <h4>Week 2 — Decide Faster, Stay Steady</h4>
+  <ul><li>48-hour decision rule once.</li><li>One meeting with only 3 clear steps.</li><li>Deliver one early correction calmly.</li></ul>
+  <h4>Week 3 — Money With Boundaries</h4>
+  <ul><li>Giving cap once.</li><li>Weekly budget review.</li><li>Direct payment follow-up.</li></ul>
+  <h4>Week 4 — Health Through Consistency</h4>
+  <ul><li>3 workouts + daily walk.</li><li>Track one metric.</li><li>Nightly reset routine.</li><li>Share one win with a partner.</li></ul>
+
+  <h3>Tools</h3>
+  <ul>
+    <li>Boundary Scripts; 48-hour decision rule; Finance Guardrails; Reset Menu.</li>
+  </ul>
+
+  <h3>By Day 30</h3>
+  <ul>
+    <li>You speak calmly and early.</li>
+    <li>You decide faster without overthinking.</li>
+    <li>Finances balanced with control.</li>
+    <li>Health routines steady and reliable.</li>
+  </ul>
+</div>`,
+
+"sheep+rhino": `
+<div class="plan">
+  <h2><span class="pill">SHEEP</span> + <span class="pill">RHINO</span> — 30-Day Comprehensive Growth Blueprint</h2>
+  <h3>Calm Strength. Bold Backbone. Reliable Results.</h3>
+  <h3>Who You Are</h3>
+  <p><b>Primary Sheep:</b> Steady, loyal, supportive; harmony and trust.</p>
+  <p><b>Secondary Rhino:</b> When stretched too far, you snap and lay down the law.</p>
+  <p><b>Your Loop:</b> Support → Avoid Conflict → Build Frustration → Snap → Regret → Repeat</p>
+  <p><b>Your Growth Path:</b> Use Rhino strength sooner and calmer. Hold boundaries firmly without swinging from soft to harsh.</p>
+
+  <h3>Shine / Sabotage</h3>
+  <h4>Strengths</h4>
+  <ul><li>Loyal, consistent, steady under pressure.</li><li>Creates safety/stability.</li><li>Can summon Rhino strength when pushed.</li></ul>
+  <h4>Weak Spots</h4>
+  <ul><li>Delays hard talks until explosion.</li><li>People push past standards until you snap.</li><li>Regret after snapping undermines influence.</li></ul>
+  <p><b>Growth Edge:</b> Speak firm truths calmly and earlier.</p>
+
+  <h3>Big 4 Areas</h3>
+  <h4>Relationships</h4>
+  <ul>
+    <li><b>Gentle But Firm Boundaries:</b> “I respect us, which is why I need this done by Friday.”</li>
+    <li><b>Don’t Delay Tough Talks:</b> “I’ve noticed this isn’t consistent—let’s fix it now.”</li>
+    <li><b>Encourage Without Excusing.</b></li>
+    <li><b>Calm Instead of Snapping:</b> “This must change—I expect it by tomorrow.”</li>
+  </ul>
+  <h4>Career / Business</h4>
+  <ul>
+    <li><b>Consistency + Clarity:</b> “The process is X—we follow it every time.”</li>
+    <li><b>Decide Without Delay:</b> 48-hour rule.</li>
+    <li><b>Firm Standards, Calm Tone:</b> Truth + patience.</li>
+    <li><b>Safe + Accountable Culture.</b></li>
+  </ul>
+  <h4>Finances</h4>
+  <ul>
+    <li><b>Steady Budget, Bold Targets.</b></li>
+    <li><b>Guard Against Over-Giving.</b></li>
+    <li><b>Weekly Review, Monthly Adjust.</b></li>
+    <li><b>Firm Money Conversations:</b> “Payment was due Friday—has it been sent?”</li>
+  </ul>
+  <h4>Health</h4>
+  <ul>
+    <li><b>Steady, Simple Habits.</b></li>
+    <li><b>Rhino Push, Sheep Recovery:</b> 3 strength + 2 recovery.</li>
+    <li><b>No-Excuse Self-Care:</b> Treat workouts/sleep like meetings.</li>
+    <li><b>Stress Reset:</b> 10-minute walk/breathe/stretch.</li>
+  </ul>
+
+  <h3>Red Flags & Protocol</h3>
+  <ul><li>Avoiding conflict → explode; lowering standards; over-giving.</li></ul>
+  <ul><li>Ask “Peace or standards?” → speak calmly + firmly → set deadline → follow up consistently.</li></ul>
+
+  <h3>Your 30-Day Plan</h3>
+  <h4>Week 1 — Speak Early, Speak Calm</h4>
+  <ul><li>Use “gentle but firm” in 2 talks.</li><li>Raise 1 issue early.</li><li>Apply calm correction once.</li></ul>
+  <h4>Week 2 — Hold the Standard</h4>
+  <ul><li>“Expectation stands” script once.</li><li>Keep 1 standard firm all week.</li><li>Use calm Rhino firmness once.</li></ul>
+  <h4>Week 3 — Money With Boundaries</h4>
+  <ul><li>Set giving cap + stick to it.</li><li>One weekly review.</li><li>5 bold income actions.</li></ul>
+  <h4>Week 4 — Healthy Balance</h4>
+  <ul><li>Daily 20-min walk.</li><li>3 strength + 2 recovery.</li><li>1 stress reset daily.</li><li>Lights out by 11.</li></ul>
+
+  <h3>Tools</h3>
+  <ul>
+    <li>Boundary Scripts; 48-hour decisions; Finance Guardrails; Reset Menu.</li>
+  </ul>
+
+  <h3>By Day 30</h3>
+  <ul>
+    <li>You speak up earlier, calmly.</li>
+    <li>Boundaries held with steady firmness.</li>
+    <li>Finances: generosity + discipline.</li>
+    <li>Health habits consistent and sustainable.</li>
+  </ul>
+</div>`
+  };
+
+  // Render chosen combo
+  const html = pairPlans[key] || `<div class="plan"></div>`;
+  document.getElementById("combo-plan").innerHTML = html;
+});
+</script>
