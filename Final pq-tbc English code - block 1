@@ -1,0 +1,1019 @@
+<!-- ✅ Results header + bars -->
+<div class="quiz-results">
+  <h1 style="font-size:2.8rem; color:#1a325d;">Your Animal Personality Breakdown!</h1>
+  <h3 id="greeting" class="greeting-text"></h3>
+  <h2 id="result-title"></h2>
+  <p id="result-description" class="summary-text"></p>
+
+  <p>🐑 Sheep Personality: <span id="score-sheep">0%</span></p>
+  <div class="bar-bg"><div class="bar" id="bar-sheep"></div></div>
+
+  <p>🦜 Love Bird Personality: <span id="score-love_bird">0%</span></p>
+  <div class="bar-bg"><div class="bar" id="bar-love_bird"></div></div>
+
+  <p>🦉 Owl Personality: <span id="score-owl">0%</span></p>
+  <div class="bar-bg"><div class="bar" id="bar-owl"></div></div>
+
+  <p>🦏 Rhino Personality: <span id="score-rhino">0%</span></p>
+  <div class="bar-bg"><div class="bar" id="bar-rhino"></div></div>
+</div>
+
+<!-- ✅ Where the TWO-ANIMAL plan will render -->
+<div id="combo-plan" style="max-width: 900px; margin: auto; padding: 2rem 1rem; font-family: 'Helvetica Neue', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(to bottom, #f7f7f7, #ffffff);"></div>
+
+<!-- ✅ Single CTA (Richard's calendar only) -->
+<div style="text-align:center; padding:3rem 1rem;">
+  <style>
+    .bounce-button-xl {
+      display:inline-block; padding:24px 64px; margin:1rem;
+      font-size:1.4rem; font-weight:800; text-decoration:none;
+      border-radius:999px; box-shadow:0 10px 35px rgba(0,0,0,0.15);
+      transition:transform 0.3s ease, box-shadow 0.3s ease;
+      animation:pulseGradient 5s infinite linear;
+      background-size:200% 200%; color:white;
+      background-image:linear-gradient(270deg, #1a325d, #1a325d, #1a325d);
+    }
+    .bounce-button-xl:hover { transform:scale(1.07) translateY(-6px); box-shadow:0 16px 50px rgba(0,0,0,0.2); }
+    @keyframes pulseGradient { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+    @media (max-width: 500px) { .bounce-button-xl { font-size: 1.1rem; padding: 18px 36px; } }
+
+    /* bars & text */
+    .greeting-text { font-size: 18px; line-height: 1.6; margin-bottom: 20px; }
+    .quiz-results { max-width: 600px; margin: 30px auto 10px; padding: 30px; text-align: center; }
+    .bar-bg { background: #eee; border-radius: 20px; height: 16px; margin: 10px auto; overflow: hidden; width: 100%; }
+    .bar { height: 100%; transition: width 1s ease-in-out; }
+    #bar-sheep { background: #0169a7; } #bar-love_bird { background: #dfeb05; }
+    #bar-owl { background: #049109; } #bar-rhino { background: #db1304; }
+    .summary-text { margin-top: 10px; font-size: 16px; line-height: 1.5; color: #444; }
+
+    /* plan typography */
+    .plan h2 { font-size: 2.0rem; color:#005181; margin:0 0 1rem; }
+    .plan h3 { font-size: 1.35rem; color:#1a325d; margin:1.4rem 0 .4rem; }
+    .plan h4 { font-size: 1.1rem; color:#1a325d; margin:1rem 0 .2rem; text-transform:uppercase; letter-spacing:.02em; }
+    .plan p, .plan li { color:#333; line-height:1.6; }
+    .plan ul { margin: .4rem 0 .9rem 1.2rem; }
+    .pill { display:inline-block; background:#D6ECFA; color:#1a325d; padding:.3rem .6rem; border-radius:.6rem; font-weight:700; margin-right:.4rem; }
+
+.highlight-name{
+  font-weight:900;
+  background:linear-gradient(to right,#1b5fa8,#a0bede);
+  padding:2px 6px;
+  border-radius:6px;
+  color:#fff;
+}
+  </style>
+
+  <a href="https://coaching.itsrichardmartinez.com/calendar-page" class="bounce-button-xl">
+    BOOK YOUR FREE CONSULTATION
+  </a>
+</div>
+
+<!-- 🚦 Router to send new combos to the new page -->
+<script>
+(function routeFromPQ(){
+  const FINAL_SET = new Set(["owl+rhino", "sheep+rhino", "sheep+owl", "sheep+love_bird"]);
+
+  const params = new URLSearchParams(location.search);
+  const scores = {
+    sheep: parseInt(params.get("sheep")) || 0,
+    love_bird: parseInt(params.get("love_bird")) || 0,
+    owl: parseInt(params.get("owl")) || 0,
+    rhino: parseInt(params.get("rhino")) || 0,
+  };
+
+  if (!(scores.sheep || scores.love_bird || scores.owl || scores.rhino)) return;
+
+  const order = ["rhino", "owl", "love_bird", "sheep"];
+  const ranked = Object.keys(scores).sort((a,b) => {
+    if (scores[b] === scores[a]) return order.indexOf(a) - order.indexOf(b);
+    return scores[b] - scores[a];
+  });
+  const key = `${ranked[0]}+${ranked[1]}`;
+
+  const FINAL_PATH = "/pages/final-30-day-plan"; // change if handle differs
+  if (FINAL_SET.has(key)) location.replace(`${FINAL_PATH}${location.search}`);
+})();
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const params = new URLSearchParams(window.location.search);
+  const scores = {
+    sheep: parseInt(params.get("sheep")) || 0,
+    love_bird: parseInt(params.get("love_bird")) || 0,
+    owl: parseInt(params.get("owl")) || 0,
+    rhino: parseInt(params.get("rhino")) || 0,
+  };
+  const firstName = params.get("first_name");
+
+  // Bars + percents
+  const total = scores.sheep + scores.love_bird + scores.owl + scores.rhino || 0;
+  const pct = k => total ? Math.round((scores[k] / total) * 100) : 0;
+  document.getElementById("score-sheep").textContent = pct("sheep") + "%";
+  document.getElementById("bar-sheep").style.width = pct("sheep") + "%";
+  document.getElementById("score-love_bird").textContent = pct("love_bird") + "%";
+  document.getElementById("bar-love_bird").style.width = pct("love_bird") + "%";
+  document.getElementById("score-owl").textContent = pct("owl") + "%";
+  document.getElementById("bar-owl").style.width = pct("owl") + "%";
+  document.getElementById("score-rhino").textContent = pct("rhino") + "%";
+  document.getElementById("bar-rhino").style.width = pct("rhino") + "%";
+
+  if (firstName) {
+    document.getElementById("greeting").innerHTML =
+      `Hey <span class="highlight-name" style="font-weight:800;background:linear-gradient(to right,#1b5fa8,#a0bede);padding:2px 6px;border-radius:6px;color:#fff;">${firstName}</span>, here’s your 30-day blueprint 👇`;
+  }
+
+  // Determine PRIMARY and SECONDARY (tie-break order keeps behavior stable)
+  const order = ["rhino", "owl", "love_bird", "sheep"]; // tie-breaker priority
+  const ranked = Object.keys(scores).sort((a,b) => {
+    if (scores[b] === scores[a]) return order.indexOf(a) - order.indexOf(b);
+    return scores[b] - scores[a];
+  });
+  const primary = ranked[0];
+  const secondary = ranked[1];
+
+  // Titles by animal
+  const names = { sheep:"Sheep", love_bird:"Lovebird", owl:"Owl", rhino:"Rhino" };
+  
+document.getElementById("result-title").innerHTML =
+  `Your Personality Combination: 
+   <span class="highlight-name">${names[primary].toUpperCase()}</span> + 
+   <span class="highlight-name">${names[secondary].toUpperCase()}</span>`;
+ document.getElementById("result-description").textContent =
+    "Strong match found. Your plan blends your first move with your correction move for consistent results.";
+
+  // 🔻 TWO-ANIMAL CONTENT (your exact copy, lightly formatted) -----------------
+  const pairPlans = {
+
+"rhino+love_bird": `
+<div class="plan">
+  <h2><span class="pill">RHINO</span> + <span class="pill">LOVEBIRD</span> — 30-Day Comprehensive Growth Blueprint</h2>
+  <h3>Strong Standards. Smart Communication. Consistent Results.</h3>
+  <h3>Who You Are</h3>
+  <p><b>Primary Rhino (your first move):</b> You move fast, confront directly, and raise the bar on the spot.</p>
+  <p><b>Secondary Lovebird (your correction move):</b> After being blunt, you worry how it landed. You soften, apologize, or “make it up,” which blurs your standard.</p>
+  <p><b>Your Loop:</b> Confront → Guilt → Soften → Confuse → Repeat</p>
+  <p><b>Your Growth Path:</b> Keep Rhino clarity. Use Lovebird warmth. Deliver standards in a way every personality can hear, respect, and follow—at the same time.</p>
+
+  <h3>Where You Shine / Where You Sabotage</h3>
+  <h4>Strengths</h4>
+  <ul><li>Clear, decisive, action-oriented.</li><li>Loyal and protective—people feel safe with you.</li><li>Your directness plus care motivates others to move.</li></ul>
+  <h4>Weak Spots</h4>
+  <ul><li>Backpedaling after a strong stand.</li><li>Guilt-driven giving or rescue behavior.</li><li>People don’t know if they’ll get “the hammer or the hug.”</li></ul>
+  <p><b>Growth Edge:</b> Combine direct standards with relational delivery in the same moment.</p>
+
+  <h3>How You Impact the Big 4 Areas</h3>
+  <h4>Relationships</h4>
+  <ul>
+    <li><b>Leverage Move 1 — Pre-Frame Before Truth:</b> “I care about us, so I need to be clear.” / “I want this to work, so I have to be direct.”</li>
+    <li><b>Leverage Move 2 — One Ask • One Deadline • One Check-In:</b> “I need X done by Y. I’ll check in on Z.”</li>
+    <li><b>Leverage Move 3 — Repair Without Rescue:</b> “If my tone felt strong, that’s on me. The expectation still stands. What do you need to meet it?”</li>
+    <li><b>Leverage Move 4 — Tailor Delivery to Personality:</b> Rhino/Owl/Lovebird/Sheep specific phrasing.</li>
+  </ul>
+  <h4>Career / Business</h4>
+  <ul>
+    <li><b>Expectation Triangle:</b> Owner • Scope • Deadline.</li>
+    <li><b>Rescue Once Rule:</b> “I’ll walk you through it today. Next time, it’s on you.”</li>
+    <li><b>Definition of Done (DoD):</b> 3–5 bullets define finished.</li>
+    <li><b>Top-3 Before Messages:</b> Three must-do tasks before email/DMs.</li>
+  </ul>
+  <h4>Finances</h4>
+  <ul>
+    <li><b>Pay Yourself First:</b> 15% Wealth, 10–15% Reserves/Taxes, 10% Growth (auto).</li>
+    <li><b>Giving Guardrails:</b> 2–5% & 24-hour delay.</li>
+    <li><b>Deal Gate:</b> ROI target • Checkpoint date • Kill switch.</li>
+    <li><b>Revenue Action Daily:</b> One concrete money move/day.</li>
+  </ul>
+  <h4>Health</h4>
+  <ul>
+    <li><b>AM Guardrail:</b> Water → 5-min mobility → write Top-3 → no phone 30m.</li>
+    <li><b>3 Strength + 2 Cardio Weekly:</b> Book like meetings.</li>
+    <li><b>PM Downshift:</b> 45m pre-bed routine.</li>
+    <li><b>Stress Resets:</b> Build a 5-item 10-minute reset menu.</li>
+  </ul>
+
+  <h3>Red Flags & Correction Protocol</h3>
+  <h4>Red Flags</h4>
+  <ul><li>“Maybe I was too hard—let me make it up.”</li><li>Reversing a standard inside 24 hours.</li><li>Rescuing twice for the same issue.</li></ul>
+  <h4>Correction Protocol</h4>
+  <ul><li>Pause 90 seconds.</li><li>Restate the standard unchanged.</li><li>Offer support (tools/time), not rescue.</li><li>Book a check-in.</li></ul>
+
+  <h3>Your 30-Day Plan</h3>
+  <h4>Week 1 — Communicate Standards That Stick</h4>
+  <ul><li>Write 5 personal standards; star the 3 most ignored.</li><li>Use a pre-frame in 2 real conversations.</li><li>Deliver one standard using two different personality styles.</li><li>Close loops with Ask-Deadline-Check-In.</li></ul>
+  <h4>Week 2 — Ruthless Execution & Delegation</h4>
+  <ul><li>Top-3 Before Messages daily.</li><li>Two 90-minute deep-work blocks.</li><li>Delegate two tasks with “done = …”.</li><li>Apply Rescue Once Rule.</li></ul>
+  <h4>Week 3 — Emotional Reset & Conflict Mastery</h4>
+  <ul><li>Use your Reset Menu daily.</li><li>Resolve two avoided issues (pre-frame + clear ask).</li><li>PM Downshift 3 nights.</li><li>One tone audit after a tough talk.</li></ul>
+  <h4>Week 4 — Money Control & Integration</h4>
+  <ul><li>Automate PYF.</li><li>Do 3 revenue actions.</li><li>Run Deal Gate once.</li><li>Hold one “soft spot” standard all week.</li></ul>
+
+  <h3>Tools</h3>
+  <ul>
+    <li>Boundary Scripts: “I care about us, so I need to be clear.” / “Expectation: X by Y. I’ll check Z.” / “If my tone felt strong, that’s on me. The expectation stays.”</li>
+    <li>DoD Checklist (3–5 bullets).</li>
+    <li>Reset Menu Card (your 5 go-tos).</li>
+    <li>Finance Guardrails (PYF, giving %, Deal Gate).</li>
+  </ul>
+
+  <h3>By Day 30</h3>
+  <ul>
+    <li>Your standards stick without backpedaling.</li>
+    <li>You focus on what matters, not busywork.</li>
+    <li>You handle conflict without exploding or softening.</li>
+    <li>Your money grows steadily; spending is disciplined.</li>
+    <li>You are consistent: strong, clear, respected, in control.</li>
+  </ul>
+</div>`,
+
+"rhino+owl": `
+<div class="plan">
+  <h2><span class="pill">RHINO</span> + <span class="pill">OWL</span> — 30-Day Comprehensive Growth Blueprint</h2>
+  <h3>Direct Action. Data-Driven Precision. Consistent Results.</h3>
+  <h3>Who You Are</h3>
+  <p><b>Primary Rhino:</b> Fast, blunt, results-driven.</p>
+  <p><b>Secondary Owl:</b> After acting, you overanalyze details and slow momentum.</p>
+  <p><b>Loop:</b> Charge → Overanalyze → Hesitate → Frustrate → Repeat</p>
+  <p><b>Growth Path:</b> Keep drive, harness precision—act with speed and accuracy without analysis paralysis.</p>
+
+  <h3>Shine / Sabotage</h3>
+  <h4>Strengths</h4>
+  <ul><li>Decisive and action-oriented.</li><li>Detail-aware and analytical.</li><li>Drive projects and spot errors early.</li></ul>
+  <h4>Weak Spots</h4>
+  <ul><li>Start fast, slam brakes.</li><li>Overload with details.</li><li>Unclear if you’ll be relentless or hesitant.</li></ul>
+  <p><b>Growth Edge:</b> Rhino decisiveness + Owl structure.</p>
+
+  <h3>Big 4 Areas</h3>
+  <h4>Relationships</h4>
+  <ul>
+    <li><b>Lead With Clarity, Not Critique:</b> “Here’s what I need and why it matters.”</li>
+    <li><b>Check Facts Before You Snap:</b> “Walk me through the facts before I respond.”</li>
+    <li><b>Simplify the Ask:</b> “All I need from you right now is X by Y.”</li>
+    <li><b>Data + Care:</b> Truth firmly, backed with data.</li>
+  </ul>
+  <h4>Career / Business</h4>
+  <ul>
+    <li><b>Fast Start, Clean Finish:</b> Launch, then refine with a checklist.</li>
+    <li><b>Decision Gate:</b> Decide within 24 hours.</li>
+    <li><b>Standardize the Process:</b> Repeatable systems.</li>
+    <li><b>Facts Before Feelings in Meetings.</b></li>
+  </ul>
+  <h4>Finances</h4>
+  <ul>
+    <li><b>Bold but Calculated:</b> Write a simple projection for bold moves.</li>
+    <li><b>Track Weekly, Decide Monthly.</b></li>
+    <li><b>If-Then Triggers.</b></li>
+    <li><b>Invest in Proven Plays.</b></li>
+  </ul>
+  <h4>Health</h4>
+  <ul>
+    <li><b>Track One Metric.</b></li>
+    <li><b>Rhino Intensity + Owl Consistency:</b> 3 intense + 2 cardio.</li>
+    <li><b>Simplify Nutrition:</b> One rule (e.g., protein every meal).</li>
+    <li><b>Rest as a Standard.</b></li>
+  </ul>
+
+  <h3>Red Flags & Protocol</h3>
+  <ul><li>Fast action → second-guessing; nitpicking; analysis freeze.</li></ul>
+  <ul><li>Ask the one next step → decide ≤24h → simple expectation → review later with data.</li></ul>
+
+  <h3>Your 30-Day Plan</h3>
+  <h4>Week 1 — Communicate Clearly Without Overwhelm</h4>
+  <ul><li>Pre-frame twice.</li><li>Simplify one instruction to a one-liner.</li><li>Back one tough truth with data.</li><li>Use Ask-Deadline-Check-In all week.</li></ul>
+  <h4>Week 2 — Execute Fast, Finish Clean</h4>
+  <ul><li>Launch one project fast.</li><li>Build one finishing checklist.</li><li>Use 24h decision gate once.</li><li>Run one meeting starting with facts.</li></ul>
+  <h4>Week 3 — Balance Boldness With Calculation</h4>
+  <ul><li>One-page projection for any new move.</li><li>Review weekly, adjust monthly.</li><li>Set one If-Then trigger.</li><li>Choose one proven play and commit.</li></ul>
+  <h4>Week 4 — Systemize Health and Recovery</h4>
+  <ul><li>Track one metric.</li><li>3 strength + 2 cardio.</li><li>One simple nutrition rule daily.</li><li>Schedule one recovery activity.</li></ul>
+
+  <h3>Tools</h3>
+  <ul>
+    <li>Boundary Scripts; Decision Gate (≤24h); DoD; Finance Guardrails; Reset Menu.</li>
+  </ul>
+
+  <h3>By Day 30</h3>
+  <ul>
+    <li>Clear expectations → real follow-through.</li>
+    <li>Start fast, finish clean.</li>
+    <li>Bold money moves with discipline.</li>
+    <li>Simple, consistent health habits.</li>
+  </ul>
+</div>`,
+
+"rhino+sheep": `
+<div class="plan">
+  <h2><span class="pill">RHINO</span> + <span class="pill">SHEEP</span> — 30-Day Comprehensive Growth Blueprint</h2>
+  <h3>Strong Drive. Gentle Edge. Consistent Results.</h3>
+
+  <h3>Who You Are</h3>
+  <p><b>Primary Rhino (your first move):</b> You move fast, confront directly, and demand results. You’re blunt, decisive, and charge head-on at problems.</p>
+  <p><b>Secondary Sheep (your correction move):</b> After pushing hard, you second-guess whether you were too harsh. You try to soften it, reassure others, or avoid further conflict.</p>
+  <p><b>Your Loop:</b> Charge → Worry → Soften → Lose Ground → Repeat</p>
+  <p><b>Your Growth Path:</b> Keep Rhino clarity and power, but deliver it with the Sheep’s gentleness without lowering the bar. This makes you consistent, respected, and trusted.</p>
+
+  <h3>Where You Shine / Where You Sabotage</h3>
+  <h4>Strengths</h4>
+  <ul>
+    <li>Bold, decisive, quick to act.</li>
+    <li>Caring and gentle after the fact.</li>
+    <li>Inspires both confidence and safety when balanced.</li>
+  </ul>
+  <h4>Weak Spots</h4>
+  <ul>
+    <li>Coming on too strong, then trying to smooth it over.</li>
+    <li>Hesitating to re-assert boundaries for fear of hurting feelings.</li>
+    <li>Others learn they can “wait you out” until you soften.</li>
+  </ul>
+  <p><b>Growth Edge:</b> Deliver tough truths with steady calm. Stop swinging between too hard and too soft. Stay firm and gentle at once.</p>
+
+  <h3>How You Impact the Big 4 Areas</h3>
+  <h4>Relationships</h4>
+  <ul>
+    <li><b>Gentle but Firm Standards:</b> “I respect you, and that’s why I need this done by Friday.”</li>
+    <li><b>No Over-Apologizing:</b> “I know I was direct, but the expectation stands.”</li>
+    <li><b>Encourage, Don’t Enable:</b> “I know it’s uncomfortable, but you’re capable. Let’s get it done.”</li>
+    <li><b>Steady Tone:</b> Strong words, calm voice.</li>
+  </ul>
+  <h4>Career / Business</h4>
+  <ul>
+    <li><b>Push, Then Support:</b> “Deadline is Friday. What do you need from me to hit it?”</li>
+    <li><b>No Retreat Rule:</b> Once a standard is set, don’t soften it later.</li>
+    <li><b>Safe but Accountable Culture:</b> “I want you to succeed, which is why I’m holding you to this.”</li>
+    <li><b>Direct Feedback, Gentle Delivery:</b> “Your numbers are down, and that has to change. I believe you can do it.”</li>
+  </ul>
+  <h4>Finances</h4>
+  <ul>
+    <li><b>Bold Targets, Gentle Discipline:</b> “Target $10k this month. Daily check: one money action today?”</li>
+    <li><b>Stop Guilt Spending:</b> 24-hour delay rule.</li>
+    <li><b>Firm Financial Boundaries:</b> “I’d love to help, but this isn’t in my giving budget right now.”</li>
+    <li><b>Direct Money Conversations:</b> “We agreed on payment by Friday. Has it been sent?”</li>
+  </ul>
+  <h4>Health</h4>
+  <ul>
+    <li><b>Push Hard, Recover Steady:</b> 3 strong workouts + 2 recovery sessions.</li>
+    <li><b>No Excuse Self-Care:</b> Schedule workouts, meals, recovery like meetings.</li>
+    <li><b>Calm Habits:</b> Replace stress snacking with tea or breathing.</li>
+    <li><b>Firm Sleep Standard:</b> Lights out by 11.</li>
+  </ul>
+
+  <h3>Red Flags & Correction Protocol</h3>
+  <h4>Red Flags</h4>
+  <ul>
+    <li>“Maybe I was too hard—let me make it up.”</li>
+    <li>Reversing a standard inside 24 hours.</li>
+    <li>Softening deadlines or accountability to protect feelings.</li>
+  </ul>
+  <h4>Correction Protocol</h4>
+  <ul>
+    <li>Pause.</li>
+    <li>Restate the standard calmly.</li>
+    <li>Add encouragement, not excuses.</li>
+    <li>Book a check-in.</li>
+  </ul>
+
+  <h3>Your 30-Day Plan</h3>
+  <h4>Week 1 — Communicate With Firmness and Calm</h4>
+  <ul>
+    <li>Practice three “gentle but firm” scripts this week.</li>
+    <li>End at least one tough talk with: “Expectation stands. What do you need to succeed?”</li>
+    <li>Use steady tone in all corrections.</li>
+  </ul>
+  <h4>Week 2 — Hold the Line</h4>
+  <ul>
+    <li>Pick one standard you usually retreat on—hold it all week.</li>
+    <li>Apply the “No Retreat Rule” in at least two conversations.</li>
+    <li>Back encouragement with accountability: “I believe in you, which is why I won’t lower this bar.”</li>
+  </ul>
+  <h4>Week 3 — Balance Push and Support</h4>
+  <ul>
+    <li>Deliver one expectation with both sides: “Deadline Friday. What do you need from me to hit it?”</li>
+    <li>Encourage without excusing.</li>
+    <li>Mix Rhino feedback with Sheep care in one performance conversation.</li>
+  </ul>
+  <h4>Week 4 — Strong Drive, Sustainable Health</h4>
+  <ul>
+    <li>3 workouts + 2 recovery sessions.</li>
+    <li>Protect sleep with a fixed lights-out time.</li>
+    <li>Replace one stress reaction with a calming reset.</li>
+    <li>One daily money action while keeping spending guardrails.</li>
+  </ul>
+
+  <h3>Tools</h3>
+  <ul>
+    <li>Boundary Scripts (“I respect you, and that’s why I need this done by Friday.”)</li>
+    <li>DoD Checklist (define “done” clearly).</li>
+    <li>Reset Menu (5 calming resets).</li>
+    <li>Finance Guardrails (24-hour spend delay, giving budget, firm ask for payments).</li>
+  </ul>
+
+  <h3>By Day 30</h3>
+  <ul>
+    <li>You speak firmly and calmly—no more hot/cold swings.</li>
+    <li>People respect and follow your standards.</li>
+    <li>You hold the line without guilt.</li>
+    <li>You balance drive and care in leadership.</li>
+    <li>You sustain energy, protect finances, and show up consistent: strong, steady, respected, in control.</li>
+  </ul>
+</div>`,
+/* ← Filled in with your RHINO + SHEEP block */
+"owl+love_bird": `
+<div class="plan">
+  <h2><span class="pill">OWL</span> + <span class="pill">LOVEBIRD</span> — 30-Day Comprehensive Growth Blueprint</h2>
+  <h3>Precise Standards. Social Energy. Inspiring Results.</h3>
+
+  <h3>Who You Are</h3>
+  <p><b>Primary Owl (your first move):</b> You analyze, calculate, and look for accuracy. You want things done right, with clarity and structure.</p>
+  <p><b>Secondary Lovebird (your correction move):</b> When you feel you’re being too rigid, you soften with charm, encouragement, or people-pleasing to keep the peace.</p>
+  <p><b>Your Loop:</b> Overanalyze → Delay → Over-accommodate → Frustrate → Repeat</p>
+  <p><b>Your Growth Path:</b> Keep the Owl’s precision and high standards but use the Lovebird’s influence to inspire, not to avoid conflict. Your sweet spot is being both exact and engaging—clear systems plus social energy.</p>
+
+  <h3>Where You Shine / Where You Sabotage</h3>
+  <h4>Strengths</h4>
+  <ul>
+    <li>Detail-driven, consistent, dependable.</li>
+    <li>Able to present information in a friendly, persuasive way.</li>
+    <li>Inspires confidence by being both accurate and approachable.</li>
+  </ul>
+  <h4>Weak Spots</h4>
+  <ul>
+    <li>Overthinking until you stall.</li>
+    <li>Smoothing over problems instead of addressing them.</li>
+    <li>Sacrificing accuracy to keep people happy.</li>
+  </ul>
+  <p><b>Growth Edge:</b> Deliver standards with warmth. Don’t water them down—wrap truth in encouragement.</p>
+
+  <h3>How You Impact the Big 4 Areas</h3>
+  <h4>Relationships</h4>
+  <ul>
+    <li><b>Warm but Clear Standards:</b> “I value us, which is why I need this done by Friday. I know you can do it.”</li>
+    <li><b>Don’t Trade Accuracy for Harmony:</b> “This part isn’t quite right yet—let’s adjust together.”</li>
+    <li><b>Celebrate Wins Out Loud:</b> “I loved how you handled that detail—great job!”</li>
+    <li><b>Balance Feedback With Positivity:</b> “This looks great overall—just tighten X.”</li>
+  </ul>
+  <h4>Career / Business</h4>
+  <ul>
+    <li><b>System + Style:</b> “Here’s the 5-step checklist—this is how we’ll all win together.”</li>
+    <li><b>Present With Energy:</b> “The numbers prove this works—imagine what happens when we all apply it.”</li>
+    <li><b>Stop People-Pleasing Delays:</b> “This isn’t aligned with the standard—let’s fix it now.”</li>
+    <li><b>Use Stories to Drive Standards:</b> “Here’s why this step matters—last time skipping it cost us $2,000.”</li>
+  </ul>
+  <h4>Finances</h4>
+  <ul>
+    <li><b>Accurate Budgets, Exciting Goals:</b> “Budget is $5k/month—hitting it funds our family trip!”</li>
+    <li><b>Guard Against Impulse Spending:</b> 24-hour delay for purchases over $100.</li>
+    <li><b>Share Wins With People You Love:</b> “We saved $1,000 this month—dinner’s on me!”</li>
+    <li><b>Track With Fun:</b> Use color-coded charts or gamified progress.</li>
+  </ul>
+  <h4>Health</h4>
+  <ul>
+    <li><b>Make Health Fun:</b> Group classes, playlists, community activities.</li>
+    <li><b>Data With Joy:</b> Track one metric and celebrate wins (“I hit 8 hours sleep—yes!”).</li>
+    <li><b>Don’t Over-Promise:</b> Set sustainable commitments (3 workouts + meal prep, not 7 workouts).</li>
+    <li><b>Use Encouragement Partners:</b> “Text me when you finish your workout—I’ll do the same.”</li>
+  </ul>
+
+  <h3>Red Flags & Correction Protocol</h3>
+  <h4>Red Flags</h4>
+  <ul>
+    <li>Overthinking, then softening to avoid conflict.</li>
+    <li>Saying “yes” when you mean “no.”</li>
+    <li>Ignoring details to stay liked.</li>
+  </ul>
+  <h4>Correction Protocol</h4>
+  <ul>
+    <li>Ask: “Am I softening to keep the peace or to serve the standard?”</li>
+    <li>Restate the expectation simply.</li>
+    <li>Add encouragement, not excuses.</li>
+    <li>Follow up within 24 hours.</li>
+  </ul>
+
+  <h3>Your 30-Day Plan</h3>
+  <h4>Week 1 — Speak Clearly With Warmth</h4>
+  <ul>
+    <li>Practice “warm but clear” script 3 times.</li>
+    <li>Set one expectation and hold it without softening.</li>
+    <li>Balance every critique with one encouragement.</li>
+  </ul>
+  <h4>Week 2 — Combine Systems With Influence</h4>
+  <ul>
+    <li>Run one meeting with a checklist and enthusiasm.</li>
+    <li>Present one data point with a story.</li>
+    <li>Use 80% rule—decide without waiting for perfection.</li>
+  </ul>
+  <h4>Week 3 — Build Financial Guardrails</h4>
+  <ul>
+    <li>Apply 24-hour spend delay twice.</li>
+    <li>Create a fun tracking chart for one money goal.</li>
+    <li>Share one financial win with family/friends.</li>
+  </ul>
+  <h4>Week 4 — Make Health Social and Sustainable</h4>
+  <ul>
+    <li>Track one health metric (steps, sleep, or calories).</li>
+    <li>Complete 3 workouts and one social activity.</li>
+    <li>Celebrate each health win out loud.</li>
+    <li>Replace one over-promise with a sustainable commitment.</li>
+  </ul>
+
+  <h3>Tools</h3>
+  <ul>
+    <li>Scripts for Standards (“I value us, which is why I need this by Friday.” / “This isn’t right yet—let’s adjust together.”)</li>
+    <li>Decision Gate (decide at 80% data, within 24 hours).</li>
+    <li>Finance Guardrails (24-hour spend delay, fun tracker, shared wins).</li>
+    <li>Reset Menu (music, group activity, journaling, breathing).</li>
+  </ul>
+
+  <h3>By Day 30</h3>
+  <ul>
+    <li>You deliver expectations clearly—without watering them down.</li>
+    <li>You balance accuracy with encouragement, so people listen.</li>
+    <li>You stop over-pleasing and start leading with influence.</li>
+    <li>Your finances tighten with fun guardrails.</li>
+    <li>Your health habits stick because they’re both measured and enjoyable.</li>
+    <li>You show up as: precise, warm, motivating, and respected.</li>
+  </ul>
+</div>`,
+
+/* ← Your OWL + LOVEBIRD block */
+"owl+sheep": `
+<div class="plan">
+  <h2><span class="pill">OWL</span> + <span class="pill">SHEEP</span> — 30-Day Comprehensive Growth Blueprint</h2>
+  <h3>Steady Precision. Calm Support. Trustworthy Results.</h3>
+
+  <h3>Who You Are</h3>
+  <p><b>Primary Owl (your first move):</b> You start with caution, structure, and analysis. You value doing things right, sticking to proven processes, and avoiding errors.</p>
+  <p><b>Secondary Sheep (your correction move):</b> When your high standards feel too harsh or demanding, you soften with patience, loyalty, and reassurance. You avoid conflict and want everyone to feel safe.</p>
+  <p><b>Your Loop:</b> Analyze → Slow Down → Over-accommodate → Lose Momentum → Repeat</p>
+  <p><b>Your Growth Path:</b> Keep the Owl’s accuracy and the Sheep’s stability, but balance them with more timely action. Your power is being dependable, precise, and calm—without letting fear of mistakes or conflict stall progress.</p>
+
+  <h3>Where You Shine / Where You Sabotage</h3>
+  <h4>Strengths</h4>
+  <ul>
+    <li>Steady, loyal, consistent.</li>
+    <li>Detail-driven, accurate, structured.</li>
+    <li>Creates safety by being calm and reliable.</li>
+  </ul>
+  <h4>Weak Spots</h4>
+  <ul>
+    <li>Overthinking details and slowing down decisions.</li>
+    <li>Avoiding hard conversations to keep peace.</li>
+    <li>Losing influence when you hesitate to assert standards.</li>
+  </ul>
+  <p><b>Growth Edge:</b> Deliver your standards gently but firmly. Decide sooner, move steadier, and let people feel both safe and accountable.</p>
+
+  <h3>How You Impact the Big 4 Areas</h3>
+  <h4>Relationships</h4>
+  <ul>
+    <li><b>Gentle But Clear Standards:</b> “I respect you, and that’s why I need this by Friday.”</li>
+    <li><b>Don’t Soften Past the Point of Clarity:</b> “The expectation stands—I’m confident you can meet it.”</li>
+    <li><b>Address Issues Early:</b> “I’ve noticed this hasn’t been consistent—let’s fix it now.”</li>
+    <li><b>Encourage Without Excusing:</b> “I know this is tough, but you’re capable—let’s push through.”</li>
+  </ul>
+  <h4>Career / Business</h4>
+  <ul>
+    <li><b>Consistent Systems:</b> “This is the checklist—we follow it every time.”</li>
+    <li><b>Decide Within 48 Hours:</b> “We’ll decide by Wednesday at 3 PM.”</li>
+    <li><b>Firm Standards, Soft Delivery:</b> “Numbers are low—we need them up. I’ll support you in hitting the mark.”</li>
+    <li><b>Safe + Accountable Culture:</b> “I want you to succeed, which is why I’ll hold you to this.”</li>
+  </ul>
+  <h4>Finances</h4>
+  <ul>
+    <li><b>Precise Budgeting:</b> “Here’s our budget—we stick to it, no exceptions.”</li>
+    <li><b>Guard Against Over-Giving:</b> “This month’s giving budget is $X.”</li>
+    <li><b>Track, But Don’t Obsess:</b> “Sunday night is my review—then I leave it.”</li>
+    <li><b>Clear Money Conversations:</b> “Payment was due Friday—has it been sent?”</li>
+  </ul>
+  <h4>Health</h4>
+  <ul>
+    <li><b>Steady Habits Over Bursts:</b> Walk daily + 3 workouts weekly.</li>
+    <li><b>Use Data for Motivation:</b> Track one metric (sleep, steps, or nutrition).</li>
+    <li><b>Calm Recovery Rituals:</b> Stretching, tea, journaling.</li>
+    <li><b>No Excuse Rule:</b> “Workout is on the calendar—it’s happening.”</li>
+  </ul>
+
+  <h3>Red Flags & Correction Protocol</h3>
+  <h4>Red Flags</h4>
+  <ul>
+    <li>Delaying decisions to avoid mistakes.</li>
+    <li>Avoiding conflict by softening standards.</li>
+    <li>Over-giving financially to keep harmony.</li>
+  </ul>
+  <h4>Correction Protocol</h4>
+  <ul>
+    <li>Ask: “Am I softening to avoid conflict or to serve the standard?”</li>
+    <li>State the expectation firmly but calmly.</li>
+    <li>Set a deadline for decision/action.</li>
+    <li>Follow up consistently.</li>
+  </ul>
+
+  <h3>Your 30-Day Plan</h3>
+  <h4>Week 1 — Decide Sooner, Speak Steadier</h4>
+  <ul>
+    <li>Apply 48-hour decision rule once this week.</li>
+    <li>Use “gentle but clear” script in two conversations.</li>
+    <li>Deliver one early correction instead of waiting.</li>
+  </ul>
+  <h4>Week 2 — Hold Standards Without Softening</h4>
+  <ul>
+    <li>Pick one standard—don’t retreat on it all week.</li>
+    <li>Use “expectation stands” script twice.</li>
+    <li>Back accountability with encouragement.</li>
+  </ul>
+  <h4>Week 3 — Balance Systems and Support</h4>
+  <ul>
+    <li>Build one repeatable checklist or SOP.</li>
+    <li>Run one performance talk with both truth + encouragement.</li>
+    <li>Apply “safe + accountable” script in one meeting.</li>
+  </ul>
+  <h4>Week 4 — Consistent Habits in Health + Money</h4>
+  <ul>
+    <li>Track one health metric all week.</li>
+    <li>Complete 3 workouts + 4 walks.</li>
+    <li>Apply giving cap and 24-hour spend rule.</li>
+    <li>Run weekly financial review once.</li>
+  </ul>
+
+  <h3>Tools</h3>
+  <ul>
+    <li>Boundary Scripts (“I respect you, which is why I need this done by Friday.” / “The expectation stands—I believe you can do it.”)</li>
+    <li>Decision Guardrail (48-hour decision rule).</li>
+    <li>Finance Guardrails (giving cap, 24-hour spend delay, weekly review).</li>
+    <li>Reset Menu (tea, journaling, stretching, prayer, walking).</li>
+  </ul>
+
+  <h3>By Day 30</h3>
+  <ul>
+    <li>You decide on time instead of dragging out choices.</li>
+    <li>You hold standards steady without over-softening.</li>
+    <li>People trust you as firm, calm, and consistent.</li>
+    <li>Your finances stay disciplined and generous.</li>
+    <li>Your health habits lock in with steadiness and calm energy.</li>
+    <li>You show up as: accurate, loyal, calm, and respected.</li>
+  </ul>
+</div>`,
+
+/* ← Your OWL + SHEEP block */
+"love_bird+rhino": `
+<div class="plan">
+  <h2><span class="pill">LOVEBIRD</span> + <span class="pill">RHINO</span> — 30-Day Comprehensive Growth Blueprint</h2>
+  <h3>High Energy. Bold Drive. Magnetic Results.</h3>
+
+  <h3>Who You Are</h3>
+  <p><b>Primary Lovebird (your first move):</b> You lead with charm, energy, and influence. You thrive on connection, inspiration, and being the life of the room.</p>
+  <p><b>Secondary Rhino (your correction move):</b> When your influence doesn’t get quick results, your Rhino kicks in—you push harder, get blunt, and demand outcomes.</p>
+  <p><b>Your Loop:</b> Inspire → Overpromise → Push Hard → Burn Out or Break Trust → Repeat</p>
+  <p><b>Your Growth Path:</b> Keep your Lovebird charisma but anchor it with Rhino discipline. Lead with inspiration, then lock it in with follow-through. That’s how you stay magnetic and respected.</p>
+
+  <h3>Where You Shine / Where You Sabotage</h3>
+  <h4>Strengths</h4>
+  <ul>
+    <li>Inspires, connects, and motivates people easily.</li>
+    <li>Bold enough to push through resistance when needed.</li>
+    <li>Can sell a vision and drive it to completion.</li>
+  </ul>
+  <h4>Weak Spots</h4>
+  <ul>
+    <li>Overpromising without the structure to deliver.</li>
+    <li>Switching from charm to blunt force when frustrated.</li>
+    <li>Burning out by running on energy instead of systems.</li>
+  </ul>
+  <p><b>Growth Edge:</b> Balance excitement with execution. Use charisma to open doors and Rhino drive to close them.</p>
+
+  <h3>How You Impact the Big 4 Areas</h3>
+  <h4>Relationships</h4>
+  <ul>
+    <li><b>Inspire With Truth, Not Hype:</b> “Here’s what I believe we can do together—and here’s the clear first step.”</li>
+    <li><b>Directness With Care:</b> “This has to change by Friday—I believe you’re capable.”</li>
+    <li><b>Celebrate Consistently:</b> “The way you handled that detail was excellent—thank you.”</li>
+    <li><b>Stop Avoiding Hard Truths:</b> “I enjoy working with you—and we still need to adjust X by Thursday.”</li>
+  </ul>
+  <h4>Career / Business</h4>
+  <ul>
+    <li><b>Sell the Vision, Lock the System:</b> “Here’s the big picture—now the 3-step system: A today, B by Wed, C by Fri.”</li>
+    <li><b>No Empty Promises Rule:</b> “I’ll confirm tomorrow after I check resources and timeline.”</li>
+    <li><b>Direct Calls to Action:</b> “Let’s lock this in now—sign by 3 PM.”</li>
+    <li><b>Balance Energy and Accountability:</b> “I’m excited for this launch—deliver the draft Thursday 10 AM.”</li>
+  </ul>
+  <h4>Finances</h4>
+  <ul>
+    <li><b>Set Fun Money Goals:</b> “When I hit $10k, I’m booking the weekend trip.”</li>
+    <li><b>Guard Against Impulsive Spending:</b> 24-hour wait rule.</li>
+    <li><b>Push Income With Bold Actions:</b> “Make 10 extra revenue calls before 2 PM.”</li>
+    <li><b>Keep Promises to Yourself:</b> “Every Friday 9 AM, transfer $X—log ‘transfer complete.’”</li>
+  </ul>
+  <h4>Health</h4>
+  <ul>
+    <li><b>Make It Fun:</b> Playlist on—group class at 6 PM (calendar invite sent).</li>
+    <li><b>Set Bold, Short-Term Challenges:</b> “7-day 10K steps streak—Day 1 starts now.”</li>
+    <li><b>Guard Against Burnout:</b> “Thursday 8–10 PM is rest—no work, no screens.”</li>
+    <li><b>Anchor Nutrition With One Rule:</b> “Protein at every meal this week—check it off nightly.”</li>
+  </ul>
+
+  <h3>Red Flags & Correction Protocol</h3>
+  <h4>Red Flags</h4>
+  <ul>
+    <li>Overpromising, underdelivering.</li>
+    <li>Switching from charm to harshness too quickly.</li>
+    <li>Spending or acting impulsively.</li>
+  </ul>
+  <h4>Correction Protocol</h4>
+  <ul>
+    <li>Pause before committing—ask, “Do I have a system for this?”</li>
+    <li>Restate the expectation clearly with deadline.</li>
+    <li>Apply 24-hour rule for money and promises.</li>
+    <li>Celebrate progress to stay encouraged.</li>
+  </ul>
+
+  <h3>Your 30-Day Plan</h3>
+  <h4>Week 1 — Inspire With Clarity</h4>
+  <ul>
+    <li>Use “truth + vision” script twice this week.</li>
+    <li>Say “I’ll confirm tomorrow” instead of overpromising once.</li>
+    <li>Celebrate 3 small wins out loud.</li>
+  </ul>
+  <h4>Week 2 — Combine Energy and Execution</h4>
+  <ul>
+    <li>Run one meeting with both vision + checklist.</li>
+    <li>Give 2 direct calls to action this week.</li>
+    <li>Apply “deadline with enthusiasm” script once.</li>
+  </ul>
+  <h4>Week 3 — Build Financial Discipline</h4>
+  <ul>
+    <li>Apply 24-hour rule on 2 purchases.</li>
+    <li>Track one financial habit (save $X).</li>
+    <li>Make 10 extra calls for revenue.</li>
+  </ul>
+  <h4>Week 4 — Fun and Sustainable Health</h4>
+  <ul>
+    <li>Do 3 fun workouts (class, group, playlist).</li>
+    <li>Complete one 7-day challenge.</li>
+    <li>Schedule one rest day.</li>
+    <li>Apply one nutrition rule daily.</li>
+  </ul>
+
+  <h3>Tools</h3>
+  <ul>
+    <li>Scripts for Balance (“Here’s what I believe we can do—and the clear step.” / “This has to change by Friday—I believe you can.” / “Protein at every meal this week—check it off nightly.”)</li>
+    <li>Finance Guardrails (24-hour rule, one tracked habit).</li>
+    <li>Decision Guardrail (commit only with a system).</li>
+    <li>Reset Menu (rest day, music, journaling, social recharge).</li>
+  </ul>
+
+  <h3>By Day 30</h3>
+  <ul>
+    <li>You inspire people while keeping promises realistic.</li>
+    <li>You balance charm with accountability.</li>
+    <li>Your finances grow with bold income and disciplined spending.</li>
+    <li>Your health feels fun and sustainable.</li>
+    <li>You show up as magnetic, bold, respected, and trusted.</li>
+  </ul>
+</div>`,
+
+/* ← Your LOVEBIRD + RHINO block */
+"love_bird+owl": `
+<div class="plan">
+  <h2><span class="pill">LOVEBIRD</span> + <span class="pill">OWL</span> — 30-Day Comprehensive Growth Blueprint</h2>
+  <h3>Magnetic Influence. Sharp Standards. Trusted Results.</h3>
+
+  <h3>Who You Are</h3>
+  <p><b>Primary Lovebird (your first move):</b> You start with charm, energy, and connection. You win people over quickly and thrive on influence, fun, and social energy.</p>
+  <p><b>Secondary Owl (your correction move):</b> After you inspire, your Owl steps in to add structure, accuracy, and critique—sometimes slowing momentum or nitpicking.</p>
+  <p><b>Your Loop:</b> Inspire → Overpromise → Overanalyze → Stall → Repeat</p>
+  <p><b>Your Growth Path:</b> Keep the Lovebird’s magnetism and the Owl’s precision—but learn to promise realistically, execute consistently, and avoid losing people in too many details.</p>
+
+  <h3>Where You Shine / Where You Sabotage</h3>
+  <h4>Strengths</h4>
+  <ul>
+    <li>Charismatic, enthusiastic, persuasive.</li>
+    <li>Able to combine influence with detail when balanced.</li>
+    <li>People feel both inspired and confident in your direction.</li>
+  </ul>
+  <h4>Weak Spots</h4>
+  <ul>
+    <li>Overcommitting and then second-guessing.</li>
+    <li>Confusing people with too many details after inspiring them.</li>
+    <li>Losing credibility if promises don’t match delivery.</li>
+  </ul>
+  <p><b>Growth Edge:</b> Inspire people, then clarify next steps simply—don’t drown them in analysis after they’ve said yes.</p>
+
+  <h3>How You Impact the Big 4 Areas</h3>
+  <h4>Relationships</h4>
+  <ul>
+    <li><b>Enthusiasm With Clarity:</b> “I’m excited for us to do this—let’s agree on Friday at 5 PM to make it happen.”</li>
+    <li><b>Celebrate Without Over-Talking:</b> “I loved how you handled that. Thank you.”</li>
+    <li><b>Don’t Nitpick After Inspiring:</b> “Great job on moving it forward—let’s polish details tomorrow.”</li>
+    <li><b>Honest Promises Only:</b> “I’d love to say yes, but I can only commit to X right now.”</li>
+  </ul>
+  <h4>Career / Business</h4>
+  <ul>
+    <li><b>Sell With Simplicity:</b> “Here’s the outcome, here’s the process, here’s your part.”</li>
+    <li><b>Stop Analysis Freeze:</b> “I’ll review this once more and finalize tomorrow.”</li>
+    <li><b>Direct Calls With Proof:</b> “This plan excites me—the data shows it worked last quarter.”</li>
+    <li><b>Inspire, Then Systemize:</b> “Here’s the vision—now the 4 steps we’ll track weekly.”</li>
+  </ul>
+  <h4>Finances</h4>
+  <ul>
+    <li><b>Fun + Facts:</b> “If I hit $8k this month, I’m booking that fun trip—we’ll track weekly.”</li>
+    <li><b>Guard Against Over-Spending to Impress:</b> 24-hour delay rule.</li>
+    <li><b>Combine Boldness With Tracking:</b> “I’ll close 2 new deals this week—then check if I hit my budget Saturday.”</li>
+    <li><b>Clear Money Standards:</b> “Payment is due Friday—has it been sent?”</li>
+  </ul>
+  <h4>Health</h4>
+  <ul>
+    <li><b>Fun First:</b> “Spin class Friday—marking it now.”</li>
+    <li><b>Track One Metric Only:</b> “This week: 8 hours of sleep tracked nightly.”</li>
+    <li><b>Short Bold Challenges:</b> “This week I’m hitting 10k steps every day—let’s go!”</li>
+    <li><b>Encourage Others in Health:</b> “I finished my 3rd workout this week—you in for next time?”</li>
+  </ul>
+
+  <h3>Red Flags & Correction Protocol</h3>
+  <h4>Red Flags</h4>
+  <ul>
+    <li>Overpromising then overanalyzing.</li>
+    <li>Inspiring then nitpicking.</li>
+    <li>Spending or committing to stay liked.</li>
+  </ul>
+  <h4>Correction Protocol</h4>
+  <ul>
+    <li>Ask: “Am I promising more than I can deliver?”</li>
+    <li>Decide within 24 hours when analysis drags.</li>
+    <li>Deliver expectations clearly and simply.</li>
+    <li>Celebrate wins before adding corrections.</li>
+  </ul>
+
+  <h3>Your 30-Day Plan</h3>
+  <h4>Week 1 — Inspire Clearly</h4>
+  <ul>
+    <li>Use “enthusiasm with clarity” script twice.</li>
+    <li>Give one promise with a specific deadline.</li>
+    <li>Celebrate 3 wins simply.</li>
+  </ul>
+  <h4>Week 2 — Stop Analysis Freeze</h4>
+  <ul>
+    <li>Apply 24-hour review rule on one project.</li>
+    <li>Run one meeting with 3 clear steps only.</li>
+    <li>Pair one data point with enthusiasm.</li>
+  </ul>
+  <h4>Week 3 — Money With Fun and Facts</h4>
+  <ul>
+    <li>Apply 24-hour spend delay twice.</li>
+    <li>Set one fun money reward for hitting a goal.</li>
+    <li>Review budget Saturday after bold action.</li>
+  </ul>
+  <h4>Week 4 — Health That Sticks</h4>
+  <ul>
+    <li>Do 3 fun workouts this week.</li>
+    <li>Track one metric (steps, sleep, or calories).</li>
+    <li>Run one 7-day health challenge.</li>
+    <li>Share one health win to inspire others.</li>
+  </ul>
+
+  <h3>Tools</h3>
+  <ul>
+    <li>Scripts for Balance (“I’m excited for this—let’s lock Friday 5 PM.” / “Great job moving this forward—let’s polish details tomorrow.” / “Payment due Friday—has it been sent?”)</li>
+    <li>Decision Guardrail (24-hour analysis rule).</li>
+    <li>Finance Guardrails (24-hour spend delay, reward goals).</li>
+    <li>Reset Menu (fun workout, music, journaling, group activity).</li>
+  </ul>
+
+  <h3>By Day 30</h3>
+  <ul>
+    <li>You inspire with energy while staying realistic.</li>
+    <li>You decide sooner and avoid analysis traps.</li>
+    <li>You blend fun with financial and health discipline.</li>
+    <li>People see you as magnetic, clear, and consistent.</li>
+    <li>You show up as: inspiring, precise, trusted, and respected.</li>
+  </ul>
+</div>`,
+
+/* ← Your LOVEBIRD + OWL block */
+"love_bird+sheep": `
+<div class="plan">
+  <h2><span class="pill">LOVEBIRD</span> + <span class="pill">SHEEP</span> — 30-Day Comprehensive Growth Blueprint</h2>
+  <h3>Magnetic Warmth. Steady Support. Loyal Results.</h3>
+
+  <h3>Who You Are</h3>
+  <p><b>Primary Lovebird (your first move):</b> You lead with enthusiasm, charm, and influence. You love people, connection, and creating fun. You thrive when others are inspired and engaged.</p>
+  <p><b>Secondary Sheep (your correction move):</b> When energy runs too high or conflict rises, your Sheep side softens things with patience, loyalty, and reassurance. You avoid hurting feelings or rocking the boat.</p>
+  <p><b>Your Loop:</b> Inspire → Overcommit → Avoid Conflict → Lose Standards → Repeat</p>
+  <p><b>Your Growth Path:</b> Keep the Lovebird’s charisma and the Sheep’s loyalty, but set firmer boundaries. Lead with inspiration, then lock it with steady accountability.</p>
+
+  <h3>Where You Shine / Where You Sabotage</h3>
+  <h4>Strengths</h4>
+  <ul>
+    <li>Highly social, encouraging, and fun to be around.</li>
+    <li>Brings loyalty, stability, and harmony to relationships.</li>
+    <li>Inspires people to move while creating a safe environment.</li>
+  </ul>
+  <h4>Weak Spots</h4>
+  <ul>
+    <li>Overcommitting and then avoiding tough conversations.</li>
+    <li>Saying yes to too much to keep people happy.</li>
+    <li>Lowering standards to maintain peace.</li>
+  </ul>
+  <p><b>Growth Edge:</b> Inspire boldly, then hold the line calmly. Don’t sacrifice standards for harmony.</p>
+
+  <h3>How You Impact the Big 4 Areas</h3>
+  <h4>Relationships</h4>
+  <ul>
+    <li><b>Gentle Standards With Enthusiasm:</b> “I love us working together, and I need this by Friday—thank you!”</li>
+    <li><b>Stop Saying Yes To Avoid Conflict:</b> “I’d love to help, but I can’t commit right now.”</li>
+    <li><b>Encourage Without Excusing:</b> “I know this is tough, but you’re capable—let’s finish strong.”</li>
+    <li><b>Don’t Disappear When Upset:</b> “I care about us, which is why I need to talk about this now.”</li>
+  </ul>
+  <h4>Career / Business</h4>
+  <ul>
+    <li><b>Inspire, Then Clarify:</b> “Here’s the exciting vision—and here are the 3 tasks we’ll hit this week.”</li>
+    <li><b>Boundaries With Kindness:</b> “That’s outside my bandwidth—I can commit to X instead.”</li>
+    <li><b>Gentle Accountability:</b> “I believe in you, and that’s why I expect this by Thursday.”</li>
+    <li><b>Encourage Progress Publicly:</b> “Great job hitting that target—let’s keep building momentum.”</li>
+  </ul>
+  <h4>Finances</h4>
+  <ul>
+    <li><b>Fun Rewards, Clear Boundaries:</b> “If I save $500 this month, I’m taking us out to dinner.”</li>
+    <li><b>Stop Guilt Spending:</b> “I’d love to, but it’s not in my budget right now.”</li>
+    <li><b>Weekly Money Check-In:</b> “Sunday night is budget check—no exceptions.”</li>
+    <li><b>Direct Money Conversations:</b> “Payment was due Friday—has it been sent?”</li>
+  </ul>
+  <h4>Health</h4>
+  <ul>
+    <li><b>Make Fitness Fun:</b> “Let’s hit that Zumba class Wednesday night!”</li>
+    <li><b>Simple, Steady Habits:</b> “Every morning, walk 20 minutes with coffee.”</li>
+    <li><b>Encourage Partners in Health:</b> “Text me after your workout—I’ll do the same.”</li>
+    <li><b>Protect Rest:</b> “Thursday 9 PM is downtime—no screens, just rest.”</li>
+  </ul>
+
+  <h3>Red Flags & Correction Protocol</h3>
+  <h4>Red Flags</h4>
+  <ul>
+    <li>Saying yes to too much.</li>
+    <li>Avoiding tough talks.</li>
+    <li>Overspending or overgiving to keep people happy.</li>
+  </ul>
+  <h4>Correction Protocol</h4>
+  <ul>
+    <li>Ask: “Am I doing this to keep peace or to keep standards?”</li>
+    <li>Restate the boundary kindly but firmly.</li>
+    <li>Use encouragement without excuses.</li>
+    <li>Follow up consistently.</li>
+  </ul>
+
+  <h3>Your 30-Day Plan</h3>
+  <h4>Week 1 — Inspire With Boundaries</h4>
+  <ul>
+    <li>Deliver 2 expectations using “gentle but firm” script.</li>
+    <li>Say no kindly once this week.</li>
+    <li>Celebrate 3 wins out loud.</li>
+  </ul>
+  <h4>Week 2 — Hold the Line Kindly</h4>
+  <ul>
+    <li>Apply “expectation stands” script once.</li>
+    <li>Give 1 piece of early feedback instead of avoiding it.</li>
+    <li>Protect one boundary from overcommitment.</li>
+  </ul>
+  <h4>Week 3 — Money With Fun and Guardrails</h4>
+  <ul>
+    <li>Apply “not in my budget” script once.</li>
+    <li>Do one fun savings reward.</li>
+    <li>Run Sunday money review.</li>
+  </ul>
+  <h4>Week 4 — Health Through Fun and Steadiness</h4>
+  <ul>
+    <li>Do 3 fun workouts (class, music, group).</li>
+    <li>Walk daily for 20 minutes.</li>
+    <li>Share health wins with a partner.</li>
+    <li>Schedule one recovery night.</li>
+  </ul>
+
+  <h3>Tools</h3>
+  <ul>
+    <li>Boundary Scripts (“I love us working together, and I need this by Friday.” / “I’d love to, but it’s not in my budget right now.” / “I believe in you—that’s why I’m holding you to this.”)</li>
+    <li>Finance Guardrails (Sunday review, giving cap, 24-hour pause).</li>
+    <li>Reset Menu (group activity, journaling, tea, music, rest night).</li>
+  </ul>
+
+  <h3>By Day 30</h3>
+  <ul>
+    <li>You inspire with energy while holding boundaries.</li>
+    <li>You stop avoiding conflict and start addressing issues kindly.</li>
+    <li>Your finances balance generosity with discipline.</li>
+    <li>Your health habits stick because they’re fun and steady.</li>
+    <li>You show up as magnetic, loyal, respected, and trusted.</li>
+  </ul>
+</div>`,
+
+/* ← Your LOVEBIRD + SHEEP block */
+"sheep+rhino": `...`,         /* ← Your SHEEP + RHINO block */
+"sheep+owl": `...`,           /* ← Your SHEEP + OWL block */
+"sheep+love_bird": `...`      /* ← Your SHEEP + LOVEBIRD block */
+  };
+
+  // 🔸 IMPORTANT: Paste the remaining combo HTML (replace each ... with your provided content),
+  // preserving headings and lists. The two full examples above show the formatting.
+
+  // Render chosen combo
+  const key = `${primary}+${secondary}`;
+  const planHTML = pairPlans[key] || `<div class="plan"><p>No plan text available for ${key} yet. (Add it to pairPlans.)</p></div>`;
+  document.getElementById("combo-plan").innerHTML = planHTML;
+});
+</script>
